@@ -1,6 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://csma12f7uwba4"]
+[gd_scene load_steps=8 format=3 uid="uid://csma12f7uwba4"]
 
-[ext_resource type="Script" uid="uid://cbk40fo4oqbgl" path="res://scripts/Stimilus.cs" id="1_4833v"]
+[ext_resource type="Script" uid="uid://cbk40fo4oqbgl" path="res://scripts/Stimulus.cs" id="1_4833v"]
+[ext_resource type="Script" uid="uid://2ik65u4q1g5b" path="res://scripts/ControlPanel.cs" id="2_a6yae"]
+[ext_resource type="Script" uid="uid://bkaxpnjs524iu" path="res://scripts/AudioController.cs" id="2_nyfqy"]
+[ext_resource type="Texture2D" uid="uid://cauuhxurh8kj5" path="res://icon.svg" id="2_ogmd2"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4833v"]
 albedo_color = Color(0.0655266, 0.284058, 0.660504, 1)
@@ -9,9 +12,9 @@ albedo_color = Color(0.0655266, 0.284058, 0.660504, 1)
 material = SubResource("StandardMaterial3D_4833v")
 
 [sub_resource type="Environment" id="Environment_4833v"]
-ambient_light_source = 2
+ambient_light_source = 1
 ambient_light_color = Color(0.882496, 0.868838, 0.83182, 1)
-ambient_light_energy = 0.9
+ambient_light_energy = 0.0
 
 [node name="Main" type="Node3D"]
 
@@ -21,7 +24,9 @@ ambient_light_energy = 0.9
 
 [node name="Stimilus" type="Node3D" parent="."]
 script = ExtResource("1_4833v")
-StimulusObject = NodePath("MeshInstance3D")
+MeshStimulus = NodePath("MeshInstance3D")
+SpriteStimulus = NodePath("Sprite3D")
+AudioController = NodePath("../AudioController")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Stimilus"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
@@ -29,10 +34,30 @@ gi_mode = 0
 mesh = SubResource("SphereMesh_w5vjc")
 
 [node name="Sprite3D" type="Sprite3D" parent="Stimilus"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
+texture = ExtResource("2_ogmd2")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+light_energy = 16.0
+omni_range = 15.0
+omni_attenuation = 0.5
 
 [node name="AudioController" type="Node3D" parent="."]
+script = ExtResource("2_nyfqy")
+LeftPlayerPath = NodePath("Left")
+RightPlayerPath = NodePath("Right")
+
+[node name="Left" type="AudioStreamPlayer3D" parent="AudioController"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0, 0)
+
+[node name="Right" type="AudioStreamPlayer3D" parent="AudioController"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
 
 [node name="ControlPanel" type="CanvasLayer" parent="."]
+script = ExtResource("2_a6yae")
+StimulusPath = NodePath("../Stimilus")
+PanelPath = NodePath("Panel")
 
 [node name="Panel" type="Panel" parent="ControlPanel"]
 offset_right = 1152.0
@@ -59,12 +84,18 @@ offset_top = 150.0
 offset_right = 350.0
 offset_bottom = 166.0
 
-[node name="OptionButton" type="OptionButton" parent="ControlPanel/Panel"]
+[node name="StimulusType" type="OptionButton" parent="ControlPanel/Panel"]
 layout_mode = 0
 offset_left = 390.0
 offset_top = 49.0
 offset_right = 422.0
 offset_bottom = 69.0
+selected = 0
+item_count = 2
+popup/item_0/text = "Mesh"
+popup/item_0/id = 0
+popup/item_1/text = "Sprite"
+popup/item_1/id = 1
 
 [node name="StartButton" type="Button" parent="ControlPanel/Panel"]
 layout_mode = 0
