@@ -26,4 +26,7 @@ renderer/rendering_method="mobile"
 [xr]
 
 openxr/enabled=true
+openxr/reference_space=2
+openxr/environment_blend_mode=0
 shaders/enabled=true
+openxr/extensions/meta/passthrough=true

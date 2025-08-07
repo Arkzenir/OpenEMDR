@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Diagnostics;
 
 public partial class AudioController : Node3D
 {
@@ -9,6 +10,7 @@ public partial class AudioController : Node3D
 
     private AudioStreamPlayer3D leftPlayer;
     private AudioStreamPlayer3D rightPlayer;
+    private bool soundOn = true;
     private float lastX = 0;
 
     public override void _Ready()
@@ -19,6 +21,8 @@ public partial class AudioController : Node3D
 
     public void UpdateStimulusPosition(float x, float maxRange)
     {
+        if (!soundOn) return;
+
         float normalized = x / maxRange;
 
         // Left trigger
@@ -30,5 +34,10 @@ public partial class AudioController : Node3D
             rightPlayer.Play();
 
         lastX = normalized;
+    }
+
+    public void ToggleSound(bool enable)
+    {
+        soundOn = enable;
     }
 }
