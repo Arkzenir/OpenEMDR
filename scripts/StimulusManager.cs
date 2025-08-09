@@ -27,7 +27,7 @@ public partial class StimulusManager : Node3D
 
         time += (float)delta * (Speed);
         float x = Mathf.Sin(time) * Range;
-        activeStimulus.Position = new Vector3(x, 0, Distance);
+        activeStimulus.Position = new Vector3(x, activeStimulus.Position.Y, Distance);
         activeStimulus.Scale = new Vector3(StimScale, StimScale, StimScale);
         // Update audio
         audioController?.UpdateStimulusPosition(x, Range);
