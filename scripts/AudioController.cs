@@ -6,7 +6,7 @@ public partial class AudioController : Node3D
 {
     [Export] public NodePath LeftPlayerPath;
     [Export] public NodePath RightPlayerPath;
-    [Export] public float TriggerThreshold = 0.95f; // Play near edges (Might change later/Become seperate)
+    [Export] public float TriggerThreshold = 0.8f; // Play near edges (Might change later/Become seperate)
 
     private AudioStreamPlayer3D leftPlayer;
     private AudioStreamPlayer3D rightPlayer;

@@ -1,40 +1,43 @@
 using Godot;
-using System;
-using System.Diagnostics;
+using Godot.Collections;
+
 
 public partial class ControlPanel : CanvasLayer
 {
-    [Export] public NodePath StimulusPath;
-    [Export] public NodePath PanelPath;
-    [Export] public NodePath AudioControllerPath;
-    [Export] public NodePath PreviewViewportPath;
+    [Export] public StimulusManager StimulusManager;
+    [Export] public Panel UIPanel;
+    [Export] public AudioController AudioController;
+    [Export] public SubViewport PreviewViewport;
+    [Export] public Array<Node3D> WorldsList; //Godot array for available worlds
     
-    private Stimulus stimulus;
-    private Panel UIPanel;
-    private AudioController audioController;
+
     private XRServerInstance xrServer;
-    private SubViewport xrViewport;
+    private OptionButton worldSelector;
 
     public override void _Ready()
     {
-        stimulus = GetNode<Stimulus>(StimulusPath);
         xrServer = XRServer.Singleton;
-        UIPanel = GetNode<Panel>(PanelPath);
-        audioController = GetNode<AudioController>(AudioControllerPath);
 
         // Sliders
         var speedSlider = UIPanel.GetNode<HSlider>("SpeedSlider");
-        speedSlider.ValueChanged += (value) => stimulus.SetSpeed((float)value);
+        speedSlider.ValueChanged += (value) => StimulusManager.SetSpeed((float)value);
 
         var rangeSlider = UIPanel.GetNode<HSlider>("RangeSlider");
-        rangeSlider.ValueChanged += (value) => stimulus.SetRange((float)value);
+        rangeSlider.ValueChanged += (value) => StimulusManager.SetRange((float)value);
 
         var distanceSlider = UIPanel.GetNode<HSlider>("DistanceSlider");
-        rangeSlider.ValueChanged += (value) => stimulus.SetDistance((float)value);
+        distanceSlider.ValueChanged += (value) => StimulusManager.SetDistance((float)value);
+
+        var sizeSlider = UIPanel.GetNode<HSlider>("SizeSlider");
+        sizeSlider.ValueChanged += (value) => StimulusManager.SetScale((float)value);
 
         // Stimulus Type (2D or 3D)
         var typeSelector = UIPanel.GetNode<OptionButton>("StimulusType");
-        typeSelector.ItemSelected += (index) => stimulus.SetStimulusType(index);
+        typeSelector.ItemSelected += (index) => SetStimulusType(index);
+
+        // World selection
+        worldSelector = UIPanel.GetNode<OptionButton>("WorldType");
+        worldSelector.ItemSelected += (index) => SetWorldType(index);
 
         // Sound Toggle
         var soundToggle = UIPanel.GetNode<CheckButton>("SoundToggle");
@@ -42,26 +45,53 @@ public partial class ControlPanel : CanvasLayer
 
         // Hook up preview
         var preview = UIPanel.GetNode<TextureRect>("XRPreview");
-        xrViewport = GetNode<SubViewport>(PreviewViewportPath);
-        preview.Texture = xrViewport.GetTexture();  // Live headset feed
+        preview.Texture = PreviewViewport.GetTexture();  // Live headset feed
 
         // Start/Pause Button
         var startPauseButton = UIPanel.GetNode<Button>("StartPauseButton");
         startPauseButton.Pressed += TogglePause;
 
-        // Reset Button
+        var emergencyStop = UIPanel.GetNode<Button>("EmergencyButton");
+        emergencyStop.Pressed += EmergencyStop;
+
+        // Reset Buttons
         var resetButton = UIPanel.GetNode<Button>("ResetButton");
         resetButton.Pressed += ResetScene;
 
-        
-
         var resetViewButton = UIPanel.GetNode<Button>("ResetViewButton");
-        resetViewButton.Pressed += () => CallDeferred(nameof(RecenterXROrigin));;
+        resetViewButton.Pressed += () => CallDeferred(nameof(RecenterXROrigin));
+
+        SetStimulusType(typeSelector.Selected);
+    }
+
+    private void SetStimulusType(long stimIndex)
+    {
+        StimulusManager.SetStimulusType(stimIndex);
+        if (stimIndex == 0)
+        {
+            SetWorldType(0);
+            worldSelector.Visible = false;
+        }
+        else worldSelector.Visible = true;
+        
+    }
+
+    private void SetWorldType(long worldIndex)
+    {
+        for (int i = 0; i < WorldsList.Count; i++)
+        {
+            if (worldIndex != 0 && i == worldIndex - 1)
+            {
+                WorldsList[i].Visible = true;
+                continue;
+            }
+            WorldsList[i].Visible = false;
+        }
     }
 
     private void ToggleSound(bool enable)
     {
-        audioController.ToggleSound(enable);
+        AudioController.ToggleSound(enable);
     }
     private void RecenterXROrigin()
     {
@@ -70,11 +100,17 @@ public partial class ControlPanel : CanvasLayer
 
     private void TogglePause()
     {
-        stimulus.TogglePaused();
+        StimulusManager.TogglePaused();
     }
 
     private void ResetScene()
     {
-        stimulus.ResetScene();
+        StimulusManager.ResetScene();
+    }
+
+    private void EmergencyStop()
+    {
+        ResetScene();
+        GD.Print("Emergency Stop Initiated");
     }
 }

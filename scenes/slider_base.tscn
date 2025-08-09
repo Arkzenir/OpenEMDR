@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3 uid="uid://bd64etlu3mm78"]
+
+[ext_resource type="Script" uid="uid://0fs14j8hqc35" path="res://scripts/SliderBase.cs" id="1_ylgh6"]
+
+[node name="SliderBase" type="HSlider"]
+offset_right = 300.0
+offset_bottom = 16.0
+script = ExtResource("1_ylgh6")
+
+[node name="Value" type="Label" parent="."]
+layout_mode = 0
+offset_left = 260.0
+offset_top = -25.0
+offset_right = 300.0
+offset_bottom = -2.0
+horizontal_alignment = 2
