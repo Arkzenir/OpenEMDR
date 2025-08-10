@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="OpenEMDR"
+config/name="OpenEMDR-Headset"
 run/main_scene="uid://csma12f7uwba4"
 config/features=PackedStringArray("4.4", "C#", "Mobile")
 config/icon="res://icon.svg"

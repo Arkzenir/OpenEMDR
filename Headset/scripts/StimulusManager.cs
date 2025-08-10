@@ -14,11 +14,18 @@ public partial class StimulusManager : Node3D
     [Export] public Node3D SpriteStimulus;
     [Export] public Node3D MeshStimulus;
     [Export] public AudioController audioController;
+    [Export] public Godot.Collections.Array<Node3D> WorldsList;
 
     private Node3D activeStimulus;
-    
+
     private float time;
     private bool paused = true;
+
+    public override void _Ready()
+    {
+        // Ensure a valid default so reset can’t null-ref if a command arrives first
+        SetStimulusType(0);
+    }
 
     public override void _PhysicsProcess(double delta)
     {
@@ -36,15 +43,20 @@ public partial class StimulusManager : Node3D
     public void SetSpeed(float newSpeed) => Speed = (newSpeed / 100.0f) * MaxSpeed;
     public void SetRange(float newRange) => Range = (newRange / 100.0f) * MaxRange;
     public void SetDistance(float newDist) => Distance = -(newDist / 100.0f) * MaxDistance - 1.0f;
-    public void SetScale(float newScale) => StimScale = (newScale / 100.0f) * MaxScale + 0.1f; 
-    public void TogglePaused() => paused = !paused;
-    
+    public void SetScale(float newScale) => StimScale = (newScale / 100.0f) * MaxScale + 0.1f;
+    public void TogglePaused()
+    {
+        paused = !paused;
+        activeStimulus.Visible = true; //Ensure something is visible
+    }
+
 
     //Center Stimulus and Pause
     public void ResetScene()
     {
         paused = true;
-        activeStimulus.Position = new Vector3(0, 0, activeStimulus.Position.Z);
+        if (activeStimulus != null)
+            activeStimulus.Position = new Vector3(0, activeStimulus.Position.Y, activeStimulus.Position.Z);
     }
 
     // 0 = Sprite, 1 = Mesh
@@ -54,5 +66,21 @@ public partial class StimulusManager : Node3D
         MeshStimulus.Visible = (typeIndex == 1);
 
         activeStimulus = typeIndex == 0 ? SpriteStimulus : MeshStimulus;
+
+        if (typeIndex == 0) SetWorldType(0);
+    }
+
+    public void SetWorldType(long worldIndex)
+    {
+        for (int i = 0; i < WorldsList.Count; i++)
+            WorldsList[i].Visible = (worldIndex != 0 && i == worldIndex - 1);
+    }
+
+    public void EmergencyStop()
+    {
+        ResetScene();
+        //Emergency results in void
+        SetWorldType(0);
+        activeStimulus.Visible = false;
     }
 }

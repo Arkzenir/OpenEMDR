@@ -1,116 +1,111 @@
 using Godot;
 using Godot.Collections;
 
-
 public partial class ControlPanel : CanvasLayer
 {
-    [Export] public StimulusManager StimulusManager;
     [Export] public Panel UIPanel;
-    [Export] public AudioController AudioController;
     [Export] public SubViewport PreviewViewport;
-    [Export] public Array<Node3D> WorldsList; //Godot array for available worlds
-    
 
-    private XRServerInstance xrServer;
-    private OptionButton worldSelector;
+    [Export] public NetServer Net;           // <-- assign in the editor
+    [Export] public DiscoveryBeacon Beacon;  // optional, but recommended
+
+    private OptionButton _worldSelector;
+    private bool _paused = true;
+
+    // ~60 fps throttler for slider messages
+    private double _lastSetSentTime;
+    private void SendSetThrottled(Param p, float v)
+    {
+        var now = Time.GetUnixTimeFromSystem();
+        if (now - _lastSetSentTime >= (1.0 / 60.0))
+        {
+            _lastSetSentTime = now;
+            Broadcast(Cmd.Set(p, v));
+        }
+    }
+
+    private void Broadcast(Command cmd)
+    {
+        if (Net == null)
+        {
+            GD.PushWarning("NetServer is not assigned on ControlPanel — no commands will be sent.");
+            return;
+        }
+        Net.Broadcast(cmd);
+    }
 
     public override void _Ready()
     {
-        xrServer = XRServer.Singleton;
+        if (UIPanel == null)
+        {
+            GD.PushError("UIPanel export is not assigned. Hook it in the editor.");
+            return;
+        }
 
-        // Sliders
+        Broadcast(Cmd.Hello("desk-1.0")); // one-time sanity ping; headset logs "Hello from desktop vdesk-1.0"
+
+        // Sliders → typed SetCmd (mirrored to headset)
         var speedSlider = UIPanel.GetNode<HSlider>("SpeedSlider");
-        speedSlider.ValueChanged += (value) => StimulusManager.SetSpeed((float)value);
+        speedSlider.ValueChanged += (value) => SendSetThrottled(Param.Speed, (float)value);
 
         var rangeSlider = UIPanel.GetNode<HSlider>("RangeSlider");
-        rangeSlider.ValueChanged += (value) => StimulusManager.SetRange((float)value);
+        rangeSlider.ValueChanged += (value) => SendSetThrottled(Param.Range, (float)value);
 
         var distanceSlider = UIPanel.GetNode<HSlider>("DistanceSlider");
-        distanceSlider.ValueChanged += (value) => StimulusManager.SetDistance((float)value);
+        distanceSlider.ValueChanged += (value) => SendSetThrottled(Param.Distance, (float)value);
 
         var sizeSlider = UIPanel.GetNode<HSlider>("SizeSlider");
-        sizeSlider.ValueChanged += (value) => StimulusManager.SetScale((float)value);
+        sizeSlider.ValueChanged += (value) => SendSetThrottled(Param.Scale, (float)value);
 
         // Stimulus Type (2D or 3D)
         var typeSelector = UIPanel.GetNode<OptionButton>("StimulusType");
-        typeSelector.ItemSelected += (index) => SetStimulusType(index);
+        typeSelector.ItemSelected += (index) =>
+        {
+            Broadcast(Cmd.StimType((int)index));
+            _worldSelector.Visible = (index == 1);
+        };
 
         // World selection
-        worldSelector = UIPanel.GetNode<OptionButton>("WorldType");
-        worldSelector.ItemSelected += (index) => SetWorldType(index);
+        _worldSelector = UIPanel.GetNode<OptionButton>("WorldType");
+        _worldSelector.ItemSelected += (index) => Broadcast(Cmd.World((int)index));
 
         // Sound Toggle
         var soundToggle = UIPanel.GetNode<CheckButton>("SoundToggle");
-        soundToggle.Toggled += ToggleSound;
+        soundToggle.Toggled += (on) => Broadcast(Cmd.Sound(on));
 
-        // Hook up preview
+        // Headset preview texture hookup (optional)
         var preview = UIPanel.GetNode<TextureRect>("XRPreview");
-        preview.Texture = PreviewViewport.GetTexture();  // Live headset feed
+        if (PreviewViewport != null)
+            preview.Texture = PreviewViewport.GetTexture();
 
-        // Start/Pause Button
+        // Start/Pause
         var startPauseButton = UIPanel.GetNode<Button>("StartPauseButton");
         startPauseButton.Pressed += TogglePause;
 
+        // Emergency
         var emergencyStop = UIPanel.GetNode<Button>("EmergencyButton");
-        emergencyStop.Pressed += EmergencyStop;
+        emergencyStop.Pressed += () =>
+        {
+            _worldSelector.Select(0); //Emergency results in void
+            Broadcast(Cmd.Emergency());
+        };
 
-        // Reset Buttons
-        var resetButton = UIPanel.GetNode<Button>("ResetButton");
-        resetButton.Pressed += ResetScene;
+        // Reset scene
+            var resetButton = UIPanel.GetNode<Button>("ResetButton");
+        resetButton.Pressed += () => Broadcast(Cmd.Reset());
 
+        // Reset view (recenter)
         var resetViewButton = UIPanel.GetNode<Button>("ResetViewButton");
-        resetViewButton.Pressed += () => CallDeferred(nameof(RecenterXROrigin));
+        resetViewButton.Pressed += () => Broadcast(Cmd.Recenter());
 
-        SetStimulusType(typeSelector.Selected);
-    }
-
-    private void SetStimulusType(long stimIndex)
-    {
-        StimulusManager.SetStimulusType(stimIndex);
-        if (stimIndex == 0)
-        {
-            SetWorldType(0);
-            worldSelector.Visible = false;
-        }
-        else worldSelector.Visible = true;
+        // Send initial state so headset starts consistent with the UI
+        Broadcast(Cmd.StimType(typeSelector.Selected));
         
-    }
-
-    private void SetWorldType(long worldIndex)
-    {
-        for (int i = 0; i < WorldsList.Count; i++)
-        {
-            if (worldIndex != 0 && i == worldIndex - 1)
-            {
-                WorldsList[i].Visible = true;
-                continue;
-            }
-            WorldsList[i].Visible = false;
-        }
-    }
-
-    private void ToggleSound(bool enable)
-    {
-        AudioController.ToggleSound(enable);
-    }
-    private void RecenterXROrigin()
-    {
-        xrServer.CenterOnHmd(XRServer.RotationMode.ResetButKeepTilt, true);
     }
 
     private void TogglePause()
     {
-        StimulusManager.TogglePaused();
-    }
-
-    private void ResetScene()
-    {
-        StimulusManager.ResetScene();
-    }
-
-    private void EmergencyStop()
-    {
-        ResetScene();
-        GD.Print("Emergency Stop Initiated");
+        _paused = !_paused;
+        Broadcast(Cmd.Pause(_paused));
     }
 }

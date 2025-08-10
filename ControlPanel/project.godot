@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="OpenEMDR"
+config/name="OpenEMDR-ControlPanel"
 run/main_scene="uid://csma12f7uwba4"
 config/features=PackedStringArray("4.4", "C#", "Mobile")
 config/icon="res://icon.svg"
@@ -25,7 +25,6 @@ renderer/rendering_method="mobile"
 
 [xr]
 
-openxr/enabled=true
 openxr/reference_space=2
 openxr/environment_blend_mode=0
 shaders/enabled=true
