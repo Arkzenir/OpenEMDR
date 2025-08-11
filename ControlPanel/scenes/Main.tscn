@@ -78,11 +78,12 @@ audio_listener_enable_3d = true
 
 [node name="Origin" type="Node3D" parent="PreviewViewport"]
 
-[node name="StimulusManager" type="Node3D" parent="PreviewViewport/Origin" node_paths=PackedStringArray("SpriteStimulus", "MeshStimulus", "audioController")]
+[node name="StimulusManager" type="Node3D" parent="PreviewViewport/Origin" node_paths=PackedStringArray("SpriteStimulus", "MeshStimulus", "audioController", "WorldsList")]
 script = ExtResource("1_nxtc6")
 SpriteStimulus = NodePath("../PreviewCamera/SpriteStimulus")
 MeshStimulus = NodePath("../MeshStimulus")
 audioController = NodePath("../PreviewCamera/AudioController")
+WorldsList = [NodePath("../WorldRoot/EmptyRoom"), NodePath("../WorldRoot/Gallery")]
 
 [node name="PreviewCamera" type="Camera3D" parent="PreviewViewport/Origin"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9, 0)
@@ -152,10 +153,11 @@ mesh = SubResource("PlaneMesh_ouey6")
 
 [node name="Gallery" parent="PreviewViewport/Origin/WorldRoot" instance=ExtResource("4_lhr70")]
 
-[node name="ControlPanel" type="CanvasLayer" parent="." node_paths=PackedStringArray("UIPanel", "PreviewViewport", "Net", "Beacon")]
+[node name="ControlPanel" type="CanvasLayer" parent="." node_paths=PackedStringArray("UIPanel", "PreviewViewport", "stimulusManager", "Net", "Beacon")]
 script = ExtResource("6_bjd11")
 UIPanel = NodePath("Panel")
 PreviewViewport = NodePath("../PreviewViewport")
+stimulusManager = NodePath("../PreviewViewport/Origin/StimulusManager")
 Net = NodePath("NetServer")
 Beacon = NodePath("DiscoveryBeacon")
 
@@ -295,6 +297,29 @@ offset_right = 897.0
 offset_bottom = 81.0
 button_pressed = true
 text = "Sound"
+
+[node name="ARToggle" type="CheckButton" parent="ControlPanel/Panel"]
+layout_mode = 0
+offset_left = 853.0
+offset_top = 100.0
+offset_right = 897.0
+offset_bottom = 131.0
+
+[node name="AROff" type="Label" parent="ControlPanel/Panel/ARToggle"]
+layout_mode = 0
+offset_left = -55.0
+offset_top = 5.0
+offset_bottom = 28.0
+text = "AR OFF"
+horizontal_alignment = 2
+
+[node name="AROn" type="Label" parent="ControlPanel/Panel/ARToggle"]
+layout_mode = 0
+offset_left = 45.0
+offset_top = 5.0
+offset_right = 96.0
+offset_bottom = 28.0
+text = "AR ON"
 
 [node name="XRPreview" type="TextureRect" parent="ControlPanel/Panel"]
 layout_mode = 0

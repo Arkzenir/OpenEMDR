@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bs41ubtknvsrd"
 path.s3tc="res://.godot/imported/Room4k_emissive.png-f67cede6ae8fe514718704c325c7a8de.s3tc.ctex"
+path.etc2="res://.godot/imported/Room4k_emissive.png-f67cede6ae8fe514718704c325c7a8de.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/vr_gallery/textures/Room4k_emissive.png"
-dest_files=["res://.godot/imported/Room4k_emissive.png-f67cede6ae8fe514718704c325c7a8de.s3tc.ctex"]
+dest_files=["res://.godot/imported/Room4k_emissive.png-f67cede6ae8fe514718704c325c7a8de.s3tc.ctex", "res://.godot/imported/Room4k_emissive.png-f67cede6ae8fe514718704c325c7a8de.etc2.ctex"]
 
 [params]
 

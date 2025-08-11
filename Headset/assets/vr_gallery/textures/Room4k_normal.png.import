@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b2euyeciwh13p"
 path.s3tc="res://.godot/imported/Room4k_normal.png-2abaa38816f466a561b869a6ef52ef58.s3tc.ctex"
+path.etc2="res://.godot/imported/Room4k_normal.png-2abaa38816f466a561b869a6ef52ef58.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/vr_gallery/textures/Room4k_normal.png"
-dest_files=["res://.godot/imported/Room4k_normal.png-2abaa38816f466a561b869a6ef52ef58.s3tc.ctex"]
+dest_files=["res://.godot/imported/Room4k_normal.png-2abaa38816f466a561b869a6ef52ef58.s3tc.ctex", "res://.godot/imported/Room4k_normal.png-2abaa38816f466a561b869a6ef52ef58.etc2.ctex"]
 
 [params]
 

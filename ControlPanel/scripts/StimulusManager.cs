@@ -14,11 +14,19 @@ public partial class StimulusManager : Node3D
     [Export] public Node3D SpriteStimulus;
     [Export] public Node3D MeshStimulus;
     [Export] public AudioController audioController;
+    [Export] public Godot.Collections.Array<Node3D> WorldsList;
 
     private Node3D activeStimulus;
-    
+    private long currentWorld = 0;
+    private long worldBeforeAR = 0;
     private float time;
     private bool paused = true;
+
+    public override void _Ready()
+    {
+        // Ensure a valid default so reset can’t null-ref if a command arrives first
+        SetStimulusType(0);
+    }
 
     public override void _PhysicsProcess(double delta)
     {
@@ -29,22 +37,48 @@ public partial class StimulusManager : Node3D
         float x = Mathf.Sin(time) * Range;
         activeStimulus.Position = new Vector3(x, activeStimulus.Position.Y, Distance);
         activeStimulus.Scale = new Vector3(StimScale, StimScale, StimScale);
-        // Update audio
-        audioController?.UpdateStimulusPosition(x, Range);
+        // Do not update audio in control panel (to be removed later)
+        //audioController?.UpdateStimulusPosition(x, Range);
     }
 
     public void SetSpeed(float newSpeed) => Speed = (newSpeed / 100.0f) * MaxSpeed;
     public void SetRange(float newRange) => Range = (newRange / 100.0f) * MaxRange;
     public void SetDistance(float newDist) => Distance = -(newDist / 100.0f) * MaxDistance - 1.0f;
-    public void SetScale(float newScale) => StimScale = (newScale / 100.0f) * MaxScale + 0.1f; 
-    public void TogglePaused() => paused = !paused;
-    
+    public void SetScale(float newScale) => StimScale = (newScale / 100.0f) * MaxScale + 0.1f;
+    public void TogglePaused()
+    {
+        paused = !paused;
+        activeStimulus.Visible = true; //Ensure something is visible
+    }
+
+    public void ToggleAudio(bool enable)
+    {
+        audioController.ToggleSound(enable);
+    }
+
+    public void SetARPassthrough(bool enable)
+    {
+        if (enable)
+        {
+            worldBeforeAR = currentWorld;
+            SetWorldType(0);
+        }
+        else
+        {
+            SetWorldType(worldBeforeAR);
+        }
+    }
 
     //Center Stimulus and Pause
     public void ResetScene()
     {
         paused = true;
-        activeStimulus.Position = new Vector3(0, 0, activeStimulus.Position.Z);
+        if (activeStimulus != null)
+        {
+            activeStimulus.Position = new Vector3(0, activeStimulus.Position.Y, activeStimulus.Position.Z);  // Reset position
+            activeStimulus.Visible = true; //Ensure something is visible
+        }
+            
     }
 
     // 0 = Sprite, 1 = Mesh
@@ -54,5 +88,22 @@ public partial class StimulusManager : Node3D
         MeshStimulus.Visible = (typeIndex == 1);
 
         activeStimulus = typeIndex == 0 ? SpriteStimulus : MeshStimulus;
+
+        if (typeIndex == 0) SetWorldType(0);
+    }
+
+    public void SetWorldType(long worldIndex)
+    {
+        currentWorld = worldIndex;
+        for (int i = 0; i < WorldsList.Count; i++)
+            WorldsList[i].Visible = (worldIndex != 0 && i == worldIndex - 1);
+    }
+
+    public void EmergencyStop()
+    {
+        ResetScene();
+        //Emergency results in void
+        SetWorldType(0);
+        activeStimulus.Visible = false;
     }
 }

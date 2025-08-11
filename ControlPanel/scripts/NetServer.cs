@@ -15,7 +15,7 @@ public partial class NetServer : Node
     {
          _server = new TcpServer();
 
-        var ok = _server.Listen(Port) == Error.Ok;
+        var ok = _server.Listen(Port, "0.0.0.0") == Error.Ok;
     }
 
     public override void _Process(double delta)

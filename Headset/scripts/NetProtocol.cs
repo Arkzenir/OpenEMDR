@@ -4,12 +4,13 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 public enum Param { Speed, Range, Distance, Scale }
-public enum CmdType { Set, StimType, World, ToggleSound, Pause, Reset, Recenter, Emergency, Hello }
+public enum CmdType { Set, StimType, World, ToggleSound, ToggleAR, Pause, Reset, Recenter, Emergency, Hello }
 
 // Base type + records
 public abstract record Command([property:JsonPropertyName("t")] CmdType T)
 {
     public string ToJson() => JsonSerializer.Serialize((object)this, JsonOpts);
+
     public static Command FromJson(string json)
     {
         using var doc = JsonDocument.Parse(json);
@@ -53,6 +54,10 @@ public abstract record Command([property:JsonPropertyName("t")] CmdType T)
                 var onSound = root.TryGetProperty("on", out var onElSnd) && onElSnd.GetBoolean();
                 return new ToggleSoundCmd(onSound);
 
+            case "togglear":
+                var onAR = root.TryGetProperty("on", out var onElAR) && onElAR.GetBoolean();
+                return new ToggleARCmd(onAR);
+
             case "pause":
                 var onPause = root.TryGetProperty("on", out var onEl) && onEl.GetBoolean();
                 return new PauseCmd(onPause);
@@ -87,6 +92,7 @@ public sealed record SetCmd(Param K, float V) : Command(CmdType.Set);
 public sealed record StimTypeCmd(int I) : Command(CmdType.StimType);
 public sealed record WorldCmd(int I) : Command(CmdType.World);
 public sealed record ToggleSoundCmd(bool On) : Command(CmdType.ToggleSound);
+public sealed record ToggleARCmd(bool On) : Command(CmdType.ToggleAR);
 public sealed record PauseCmd(bool On) : Command(CmdType.Pause);
 public sealed record ResetCmd() : Command(CmdType.Reset);
 public sealed record RecenterCmd() : Command(CmdType.Recenter);

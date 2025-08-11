@@ -6,6 +6,8 @@ public partial class ControlPanel : CanvasLayer
     [Export] public Panel UIPanel;
     [Export] public SubViewport PreviewViewport;
 
+    [Export] public StimulusManager stimulusManager;
+
     [Export] public NetServer Net;           // <-- assign in the editor
     [Export] public DiscoveryBeacon Beacon;  // optional, but recommended
 
@@ -46,66 +48,104 @@ public partial class ControlPanel : CanvasLayer
 
         // Sliders → typed SetCmd (mirrored to headset)
         var speedSlider = UIPanel.GetNode<HSlider>("SpeedSlider");
-        speedSlider.ValueChanged += (value) => SendSetThrottled(Param.Speed, (float)value);
-
+        speedSlider.ValueChanged += (value) =>
+        {
+            SendSetThrottled(Param.Speed, (float)value);
+            stimulusManager.SetSpeed((float)value);
+        };
         var rangeSlider = UIPanel.GetNode<HSlider>("RangeSlider");
-        rangeSlider.ValueChanged += (value) => SendSetThrottled(Param.Range, (float)value);
-
+        rangeSlider.ValueChanged += (value) =>
+        {
+            SendSetThrottled(Param.Range, (float)value);
+            stimulusManager.SetRange((float)value);
+        };
         var distanceSlider = UIPanel.GetNode<HSlider>("DistanceSlider");
-        distanceSlider.ValueChanged += (value) => SendSetThrottled(Param.Distance, (float)value);
-
+        distanceSlider.ValueChanged += (value) =>
+        {
+            SendSetThrottled(Param.Distance, (float)value);
+            stimulusManager.SetDistance((float)value);
+        };
         var sizeSlider = UIPanel.GetNode<HSlider>("SizeSlider");
-        sizeSlider.ValueChanged += (value) => SendSetThrottled(Param.Scale, (float)value);
+        sizeSlider.ValueChanged += (value) =>
+        {
+            SendSetThrottled(Param.Scale, (float)value);
+            stimulusManager.SetScale((float)value);
+        };
 
         // Stimulus Type (2D or 3D)
         var typeSelector = UIPanel.GetNode<OptionButton>("StimulusType");
         typeSelector.ItemSelected += (index) =>
         {
             Broadcast(Cmd.StimType((int)index));
+            stimulusManager.SetStimulusType((int)index);
             _worldSelector.Visible = (index == 1);
         };
 
         // World selection
         _worldSelector = UIPanel.GetNode<OptionButton>("WorldType");
-        _worldSelector.ItemSelected += (index) => Broadcast(Cmd.World((int)index));
+        _worldSelector.ItemSelected += (index) =>
+        {
+            Broadcast(Cmd.World((int)index));
+            stimulusManager.SetWorldType((int)index);
+        };
 
         // Sound Toggle
         var soundToggle = UIPanel.GetNode<CheckButton>("SoundToggle");
-        soundToggle.Toggled += (on) => Broadcast(Cmd.Sound(on));
+        soundToggle.Toggled += (on) =>
+        {
+            Broadcast(Cmd.Sound(on));
+            stimulusManager.ToggleAudio(on);
+        };
 
-        // Headset preview texture hookup (optional)
-        var preview = UIPanel.GetNode<TextureRect>("XRPreview");
-        if (PreviewViewport != null)
-            preview.Texture = PreviewViewport.GetTexture();
+        var ARToggle = UIPanel.GetNode<CheckButton>("ARToggle");
+        ARToggle.Toggled += (on) =>
+        {
+            Broadcast(Cmd.AR(on));
+            stimulusManager.SetARPassthrough(on);
+        };
 
         // Start/Pause
         var startPauseButton = UIPanel.GetNode<Button>("StartPauseButton");
         startPauseButton.Pressed += TogglePause;
 
-        // Emergency
+        // Emergency Stop
         var emergencyStop = UIPanel.GetNode<Button>("EmergencyButton");
-        emergencyStop.Pressed += () =>
-        {
-            _worldSelector.Select(0); //Emergency results in void
-            Broadcast(Cmd.Emergency());
-        };
+        emergencyStop.Pressed += EmergencyStop;
 
         // Reset scene
-            var resetButton = UIPanel.GetNode<Button>("ResetButton");
-        resetButton.Pressed += () => Broadcast(Cmd.Reset());
+        var resetButton = UIPanel.GetNode<Button>("ResetButton");
+        resetButton.Pressed += ResetScene;
 
-        // Reset view (recenter)
+        // Reset view (recenter on horizontal axis)
         var resetViewButton = UIPanel.GetNode<Button>("ResetViewButton");
         resetViewButton.Pressed += () => Broadcast(Cmd.Recenter());
 
+        // Headset preview texture hookup
+        var preview = UIPanel.GetNode<TextureRect>("XRPreview");
+        if (PreviewViewport != null)
+            preview.Texture = PreviewViewport.GetTexture();
+
         // Send initial state so headset starts consistent with the UI
         Broadcast(Cmd.StimType(typeSelector.Selected));
-        
+
     }
 
     private void TogglePause()
     {
         _paused = !_paused;
         Broadcast(Cmd.Pause(_paused));
+        stimulusManager.TogglePaused();
+    }
+
+    private void ResetScene()
+    {
+        Broadcast(Cmd.Reset());
+        stimulusManager.ResetScene();
+    }
+
+    private void EmergencyStop()
+    {
+        Broadcast(Cmd.Emergency());
+        stimulusManager.EmergencyStop();
     }
 }

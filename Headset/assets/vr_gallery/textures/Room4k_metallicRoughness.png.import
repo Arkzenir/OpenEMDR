@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cvedhqtk66uqo"
 path.s3tc="res://.godot/imported/Room4k_metallicRoughness.png-21f93030e807f14a4da8c30ee778d74b.s3tc.ctex"
+path.etc2="res://.godot/imported/Room4k_metallicRoughness.png-21f93030e807f14a4da8c30ee778d74b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/vr_gallery/textures/Room4k_metallicRoughness.png"
-dest_files=["res://.godot/imported/Room4k_metallicRoughness.png-21f93030e807f14a4da8c30ee778d74b.s3tc.ctex"]
+dest_files=["res://.godot/imported/Room4k_metallicRoughness.png-21f93030e807f14a4da8c30ee778d74b.s3tc.ctex", "res://.godot/imported/Room4k_metallicRoughness.png-21f93030e807f14a4da8c30ee778d74b.etc2.ctex"]
 
 [params]
 

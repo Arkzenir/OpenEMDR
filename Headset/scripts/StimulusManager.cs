@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Godot;
 
 public partial class StimulusManager : Node3D
@@ -16,8 +17,10 @@ public partial class StimulusManager : Node3D
     [Export] public AudioController audioController;
     [Export] public Godot.Collections.Array<Node3D> WorldsList;
 
+    private XRInterface xrInterface;
     private Node3D activeStimulus;
-
+    private long currentWorld = 0;
+    private long worldBeforeAR = 0;
     private float time;
     private bool paused = true;
 
@@ -25,6 +28,7 @@ public partial class StimulusManager : Node3D
     {
         // Ensure a valid default so reset can’t null-ref if a command arrives first
         SetStimulusType(0);
+        xrInterface = XRServer.Singleton.PrimaryInterface;
     }
 
     public override void _PhysicsProcess(double delta)
@@ -44,19 +48,43 @@ public partial class StimulusManager : Node3D
     public void SetRange(float newRange) => Range = (newRange / 100.0f) * MaxRange;
     public void SetDistance(float newDist) => Distance = -(newDist / 100.0f) * MaxDistance - 1.0f;
     public void SetScale(float newScale) => StimScale = (newScale / 100.0f) * MaxScale + 0.1f;
+    public void ToggleAudio(bool enable)
+    {
+        audioController.ToggleSound(enable);
+    }
     public void TogglePaused()
     {
         paused = !paused;
         activeStimulus.Visible = true; //Ensure something is visible
     }
 
+    public void SetARPassthrough(bool enable)
+    {
+        GD.Print("Available modes: " + xrInterface.GetSupportedEnvironmentBlendModes());
+        GD.Print("Current mode: " + xrInterface.EnvironmentBlendMode);
+        if (enable)
+        {
+            worldBeforeAR = currentWorld;
+            SetWorldType(0);
+            xrInterface.EnvironmentBlendMode = XRInterface.EnvironmentBlendModeEnum.AlphaBlend;
+        }
+        else
+        {
+            SetWorldType(worldBeforeAR);
+            xrInterface.EnvironmentBlendMode = XRInterface.EnvironmentBlendModeEnum.Opaque;
+        }
+    }
 
     //Center Stimulus and Pause
     public void ResetScene()
     {
         paused = true;
         if (activeStimulus != null)
-            activeStimulus.Position = new Vector3(0, activeStimulus.Position.Y, activeStimulus.Position.Z);
+        {
+            activeStimulus.Position = new Vector3(0, activeStimulus.Position.Y, activeStimulus.Position.Z);  // Reset position
+            activeStimulus.Visible = true; //Ensure something is visible
+        }
+            
     }
 
     // 0 = Sprite, 1 = Mesh
@@ -72,6 +100,7 @@ public partial class StimulusManager : Node3D
 
     public void SetWorldType(long worldIndex)
     {
+        currentWorld = worldIndex;
         for (int i = 0; i < WorldsList.Count; i++)
             WorldsList[i].Visible = (worldIndex != 0 && i == worldIndex - 1);
     }

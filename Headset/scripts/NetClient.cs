@@ -8,7 +8,6 @@ public partial class NetClient : Node
 {
     [ExportGroup("Refs")]
     [Export] public StimulusManager StimulusManager;
-    [Export] public AudioController AudioController;
 
     [ExportGroup("Network")]
     [Export] public int BeaconPort = 50101;   // must match desktop
@@ -35,7 +34,7 @@ public partial class NetClient : Node
         _setters[Param.Scale] = (v) => StimulusManager.SetScale(v);
 
         _udp = new PacketPeerUdp();
-        var bindErr = _udp.Bind(BeaconPort, "*");
+        var bindErr = _udp.Bind(BeaconPort, "0.0.0.0");
         if (bindErr != Error.Ok)
             GD.PushError($"UDP bind failed: {bindErr}");
 
@@ -170,8 +169,13 @@ public partial class NetClient : Node
                 break;
 
             case ToggleSoundCmd snd:
-                AudioController.ToggleSound(snd.On);
+                StimulusManager.ToggleAudio(snd.On);
                 break;
+
+            case ToggleARCmd ar:
+                StimulusManager.SetARPassthrough(ar.On);
+                break;
+
 
             case PauseCmd p:
                 EnsurePaused(p.On);

@@ -22,6 +22,7 @@ project/assembly_name="OpenEMDR"
 [rendering]
 
 renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
 
 [xr]
 
@@ -30,3 +31,4 @@ openxr/reference_space=2
 openxr/environment_blend_mode=0
 shaders/enabled=true
 openxr/extensions/meta/passthrough=true
+openxr/extensions/meta/color_space/starting_color_space=3
