@@ -40,9 +40,6 @@ public partial class NetClient : Node
 
         _tcp = new StreamPeerTcp();
 
-        // Try last remembered server (if any)
-        //if (LoadLastServer(out var host, out var port))
-        //    TryConnect(host, port);
     }
 
     public override void _Process(double delta)
@@ -208,32 +205,4 @@ public partial class NetClient : Node
         _paused = shouldBePaused;
     }
 
-    /*
-    private bool LoadLastServer(out string host, out int port)
-    {
-        host = null; port = DefaultPort;
-        var path = "user://last_server.txt";
-        if (FileAccess.FileExists(path))
-        {
-            using var f = FileAccess.Open(path, FileAccess.ModeFlags.Read);
-            var s = f.GetAsText().Trim();
-            var parts = s.Split(':');
-            if (parts.Length == 2 && int.TryParse(parts[1], out var p))
-            {
-                host = parts[0];
-                port = p;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    
-    private void SaveLastServer(string host, int port)
-    {
-        var path = "user://last_server.txt";
-        using var f = FileAccess.Open(path, FileAccess.ModeFlags.Write);
-        f.StoreString($"{host}:{port}");
-    }
-    */
 }

@@ -37,8 +37,8 @@ public partial class StimulusManager : Node3D
         float x = Mathf.Sin(time) * Range;
         activeStimulus.Position = new Vector3(x, activeStimulus.Position.Y, Distance);
         activeStimulus.Scale = new Vector3(StimScale, StimScale, StimScale);
-        // Do not update audio in control panel (to be removed later)
-        //audioController?.UpdateStimulusPosition(x, Range);
+
+        // Do not update audio in control panel, unlike headset instance
     }
 
     public void SetSpeed(float newSpeed) => Speed = (newSpeed / 100.0f) * MaxSpeed;
@@ -51,10 +51,7 @@ public partial class StimulusManager : Node3D
         activeStimulus.Visible = true; //Ensure something is visible
     }
 
-    public void ToggleAudio(bool enable)
-    {
-        audioController.ToggleSound(enable);
-    }
+
 
     public void SetARPassthrough(bool enable)
     {
@@ -102,7 +99,7 @@ public partial class StimulusManager : Node3D
     public void EmergencyStop()
     {
         ResetScene();
-        //Emergency results in void
+        //Emergency results in void world
         SetWorldType(0);
         activeStimulus.Visible = false;
     }

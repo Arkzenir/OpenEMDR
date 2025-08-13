@@ -12,7 +12,7 @@ public partial class DiscoveryBeacon : Node
     private double _accum;
 
     private string _host;
-    private string _subnetBroadcast; // also send subnet-directed broadcast
+    private string _subnetBroadcast; // also send subnet-directed broadcast for reliability
 
     public override void _Ready()
     {
@@ -44,6 +44,7 @@ public partial class DiscoveryBeacon : Node
         }
     }
 
+    // Helper functions for limiting host adress to local IPV4
     private static string PickPrivateIPv4()
     {
         foreach (var s in IP.GetLocalAddresses())

@@ -8,8 +8,8 @@ public partial class ControlPanel : CanvasLayer
 
     [Export] public StimulusManager stimulusManager;
 
-    [Export] public NetServer Net;           // <-- assign in the editor
-    [Export] public DiscoveryBeacon Beacon;  // optional, but recommended
+    [Export] public NetServer Net;           // Server for transmiting commands
+    [Export] public DiscoveryBeacon Beacon;  // UDP beacon for advertising the server local adress and port
 
     private OptionButton _worldSelector;
     private bool _paused = true;
@@ -46,7 +46,7 @@ public partial class ControlPanel : CanvasLayer
 
         Broadcast(Cmd.Hello("desk-1.0")); // one-time sanity ping; headset logs "Hello from desktop vdesk-1.0"
 
-        // Sliders → typed SetCmd (mirrored to headset)
+        // Sliders send throttled updates
         var speedSlider = UIPanel.GetNode<HSlider>("SpeedSlider");
         speedSlider.ValueChanged += (value) =>
         {
@@ -94,7 +94,6 @@ public partial class ControlPanel : CanvasLayer
         soundToggle.Toggled += (on) =>
         {
             Broadcast(Cmd.Sound(on));
-            stimulusManager.ToggleAudio(on);
         };
 
         var ARToggle = UIPanel.GetNode<CheckButton>("ARToggle");
