@@ -183,7 +183,7 @@ public partial class NetClient : Node
                 break;
 
             case RecenterCmd:
-                XRServer.Singleton.CenterOnHmd(XRServer.RotationMode.ResetButKeepTilt, true);
+                StimulusManager.ResetViewpoint();
                 break;
 
             case EmergencyCmd:

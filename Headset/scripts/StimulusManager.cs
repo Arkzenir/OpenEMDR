@@ -75,16 +75,11 @@ public partial class StimulusManager : Node3D
         }
     }
 
-    //Center Stimulus and Pause
-    public void ResetScene()
+    public void SetWorldType(long worldIndex)
     {
-        paused = true;
-        if (activeStimulus != null)
-        {
-            activeStimulus.Position = new Vector3(0, activeStimulus.Position.Y, activeStimulus.Position.Z);  // Reset position
-            activeStimulus.Visible = true; //Ensure something is visible
-        }
-            
+        currentWorld = worldIndex;
+        for (int i = 0; i < WorldsList.Count; i++)
+            WorldsList[i].Visible = (worldIndex != 0 && i == worldIndex - 1);
     }
 
     // 0 = Sprite, 1 = Mesh
@@ -98,11 +93,21 @@ public partial class StimulusManager : Node3D
         if (typeIndex == 0) SetWorldType(0);
     }
 
-    public void SetWorldType(long worldIndex)
+    //Center Stimulus and Pause
+    public void ResetScene()
     {
-        currentWorld = worldIndex;
-        for (int i = 0; i < WorldsList.Count; i++)
-            WorldsList[i].Visible = (worldIndex != 0 && i == worldIndex - 1);
+        paused = true;
+        if (activeStimulus != null)
+        {
+            activeStimulus.Position = new Vector3(0, activeStimulus.Position.Y, activeStimulus.Position.Z);  // Reset position
+            activeStimulus.Visible = true; //Ensure something is visible
+        }
+            
+    }
+
+    public void ResetViewpoint()
+    {
+        XRServer.Singleton.CenterOnHmd(XRServer.RotationMode.ResetButKeepTilt, true);
     }
 
     public void EmergencyStop()
